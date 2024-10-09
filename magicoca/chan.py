@@ -1,5 +1,5 @@
 from multiprocessing import Pipe
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Any
 
 T = TypeVar("T")
 
@@ -40,11 +40,9 @@ class Chan(Generic[T]):
         self.send(other)
         return self
 
-    def __rlshift__(self, other) -> T:
+    def __rlshift__(self, other: Any) -> T:
         """
-        obj << chan
-        Args:
-            other:
+        << chan
         Returns:
 
         """
