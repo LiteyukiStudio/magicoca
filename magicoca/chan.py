@@ -1,3 +1,6 @@
+"""
+Chan is a simple channel implementation using multiprocessing.Pipe.
+"""
 from multiprocessing import Pipe
 from typing import TypeVar, Generic, Any
 
@@ -5,24 +8,67 @@ T = TypeVar("T")
 
 
 class Chan(Generic[T]):
-    def __init__(self, buffer: int = 0):
-        self._buffer = buffer
+    """
+    Chan is a simple channel implementation using multiprocessing.Pipe.
+
+    Attributes:
+        _send_conn: The sending end of the pipe.
+        _recv_conn: The receiving end of the pipe.
+
+    Methods:
+        send: Send a value to the channel.
+        recv: Receive a value from the channel.
+        close: Close the channel.
+        __iter__: Return the channel object.
+        __next__: Receive a value from the channel.
+        __lshift__: Send a value to the channel.
+        __rlshift__: Receive a value from the channel.
+    """
+
+    def __init__(self):
+        """
+        Initialize the channel.
+        """
         self._send_conn, self._recv_conn = Pipe()
 
     def send(self, value: T):
+        """
+        Send a value to the channel.
+        Args:
+            value: The value to send.
+        """
         self._send_conn.send(value)
 
-    def recv(self) -> T:
+    def recv(self, timeout: float | None) -> T | None:
+        """Receive a value from the channel.
+        If the timeout is None, it will block until a value is received.
+        If the timeout is a positive number, it will wait for the specified time, and if no value is received, it will return None.
+        接收通道中的值。
+        如果超时为None，则它将阻塞，直到接收到值。
+        如果超时是正数，则它将等待指定的时间，如果没有接收到值，则返回None。
+        Args:
+            timeout:
+                The maximum time to wait for a value.
+                等待值的最长时间。
+        Returns:
+            T: The value received from the channel.
+            从通道接收的值。
+        """
+        if timeout is not None:
+            if not self._recv_conn.poll(timeout):
+                return None
         return self._recv_conn.recv()
 
     def close(self):
+        """
+        Close the channel. destructor
+        """
         self._send_conn.close()
         self._recv_conn.close()
 
-    def __iter__(self):
+    def __iter__(self) -> "Chan[T]":
         """
-
-        Returns:
+        Returns: The channel object.
         """
         return self
 
@@ -33,9 +79,8 @@ class Chan(Generic[T]):
         """
         chan << obj
         Args:
-            other:
-        Returns:
-
+            other: The object to send.
+        Returns: self
         """
         self.send(other)
         return self
@@ -43,7 +88,6 @@ class Chan(Generic[T]):
     def __rlshift__(self, other: Any) -> T:
         """
         << chan
-        Returns:
-
+        Returns: The value received from the channel.
         """
-        return self.recv()
+        return self.recv(None)
