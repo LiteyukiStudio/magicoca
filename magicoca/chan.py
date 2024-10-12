@@ -92,7 +92,7 @@ class Chan(Generic[T]):
         """
         return self.recv(None)
 
-    def __add__(self, other: "Chan[T]") -> "Chan[T]":
+    def __add__(self, other: "Chan[T]"):
         """
         Connect 1 channel.send to another channel.recv.
         Args:
