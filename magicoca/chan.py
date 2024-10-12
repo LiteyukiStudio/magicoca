@@ -12,8 +12,8 @@ class Chan(Generic[T]):
     Chan is a simple channel implementation using multiprocessing.Pipe.
 
     Attributes:
-        _send_conn: The sending end of the pipe.
-        _recv_conn: The receiving end of the pipe.
+        send_conn: The sending end of the pipe.
+        recv_conn: The receiving end of the pipe.
 
     Methods:
         send: Send a value to the channel.
@@ -29,7 +29,7 @@ class Chan(Generic[T]):
         """
         Initialize the channel.
         """
-        self._send_conn, self._recv_conn = Pipe()
+        self.send_conn, self.recv_conn = Pipe()
 
     def send(self, value: T):
         """
@@ -37,9 +37,9 @@ class Chan(Generic[T]):
         Args:
             value: The value to send.
         """
-        self._send_conn.send(value)
+        self.send_conn.send(value)
 
-    def recv(self, timeout: float | None) -> T | None:
+    def recv(self, timeout: float | None = None) -> T | None:
         """Receive a value from the channel.
         If the timeout is None, it will block until a value is received.
         If the timeout is a positive number, it will wait for the specified time, and if no value is received, it will return None.
@@ -55,16 +55,16 @@ class Chan(Generic[T]):
             从通道接收的值。
         """
         if timeout is not None:
-            if not self._recv_conn.poll(timeout):
+            if not self.recv_conn.poll(timeout):
                 return None
-        return self._recv_conn.recv()
+        return self.recv_conn.recv()
 
     def close(self):
         """
         Close the channel. destructor
         """
-        self._send_conn.close()
-        self._recv_conn.close()
+        self.send_conn.close()
+        self.recv_conn.close()
 
     def __iter__(self) -> "Chan[T]":
         """
@@ -91,3 +91,12 @@ class Chan(Generic[T]):
         Returns: The value received from the channel.
         """
         return self.recv(None)
+
+    def __add__(self, other: "Chan[T]") -> "Chan[T]":
+        """
+        Connect 1 channel.send to another channel.recv.
+        Args:
+            other:
+        Returns:
+        """
+        self.recv_conn, other.recv_conn = other.recv_conn, self.recv_conn
