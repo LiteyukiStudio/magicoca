@@ -6,6 +6,12 @@ from typing import TypeVar, Generic, Any
 
 T = TypeVar("T")
 
+class NoRecvValue(Exception):
+    """
+    Exception raised when there is no value to receive.
+    """
+    pass
+
 
 class Chan(Generic[T]):
     """
@@ -31,6 +37,8 @@ class Chan(Generic[T]):
         """
         self.send_conn, self.recv_conn = Pipe()
 
+        self.is_closed = False
+
     def send(self, value: T):
         """
         Send a value to the channel.
@@ -39,7 +47,7 @@ class Chan(Generic[T]):
         """
         self.send_conn.send(value)
 
-    def recv(self, timeout: float | None = None) -> T | None:
+    def recv(self, timeout: float | None = None) -> T | None | NoRecvValue:
         """Receive a value from the channel.
         If the timeout is None, it will block until a value is received.
         If the timeout is a positive number, it will wait for the specified time, and if no value is received, it will return None.
@@ -56,8 +64,9 @@ class Chan(Generic[T]):
         """
         if timeout is not None:
             if not self.recv_conn.poll(timeout):
-                return None
+                return NoRecvValue("No value to receive.")
         return self.recv_conn.recv()
+
 
     def close(self):
         """
@@ -65,6 +74,7 @@ class Chan(Generic[T]):
         """
         self.send_conn.close()
         self.recv_conn.close()
+        self.is_closed = True
 
     def __iter__(self) -> "Chan[T]":
         """

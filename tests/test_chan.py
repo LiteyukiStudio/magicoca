@@ -1,4 +1,5 @@
 import time
+from select import select
 
 from magicoca.chan import Chan
 from multiprocessing import Process, set_start_method
@@ -20,6 +21,7 @@ def p2f(chan: Chan[int]):
             break
     if recv_ans != list(range(10)) + [-1]:
         raise ValueError("Chan Shift Test Failed")
+
 
 class TestChan:
 
@@ -63,3 +65,6 @@ class TestChan:
         p2.start()
         p1.join()
         p2.join()
+
+
+
