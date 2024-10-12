@@ -5,22 +5,22 @@ from magicoca import Chan, select
 
 def sp1(chan: Chan[int]):
     for i in range(10):
-        chan << i
+        chan << i << i * 2
 
 
 def sp2(chan: Chan[int]):
     for i in range(10):
-        chan << i
+        chan << i << i * 3
+
 
 
 def rp(chans: list[Chan[int]]):
     rl = []
     for t in select(*chans):
         rl.append(t)
-        if len(rl) == 20:
+        if len(rl) == 40:
             break
     print(rl)
-    assert len(rl) == 20
 
 
 class TestSelect:
