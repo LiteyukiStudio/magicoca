@@ -110,3 +110,9 @@ class Chan(Generic[T]):
         Returns:
         """
         self.recv_conn, other.recv_conn = other.recv_conn, self.recv_conn
+
+    def __del__(self):
+        """
+        Close the channel when the object is deleted.
+        """
+        self.close()
