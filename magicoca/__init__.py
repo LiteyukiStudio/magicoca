@@ -1,4 +1,5 @@
 from multiprocessing import set_start_method
+from multiprocessing.connection import wait
 from typing import Any, Callable, Generator
 
 from magicoca.chan import Chan, T, NoRecvValue
@@ -16,10 +17,14 @@ def select(*args: Chan[T]) -> Generator[T, None, None]:
     Args:
         args: channels
     """
-    while True:
-        for ch in args:
-            if ch.is_closed:
-                continue
+    pipes = [ch.recv_conn for ch in args if not ch.is_closed]
 
-            if not isinstance(value := ch.recv(0), NoRecvValue):
-                yield value
+    while pipes:
+        ready_pipes = wait(pipes)
+        for pipe in ready_pipes:
+            for ch in args:
+                if ch.recv_conn == pipe:
+                    if not isinstance(value := ch.recv(0), NoRecvValue):
+                        yield value
+                    if ch.is_closed:
+                        pipes.remove(pipe)

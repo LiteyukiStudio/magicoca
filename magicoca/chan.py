@@ -116,3 +116,4 @@ class Chan(Generic[T]):
         Close the channel when the object is deleted.
         """
         self.close()
+
