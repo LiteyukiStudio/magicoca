@@ -4,41 +4,35 @@ from multiprocessing import Process
 from magicoca import Chan, select
 
 
-def sp1(chan: Chan[int]):
-    for i in range(10):
-        chan << i << i * 2
-
-
-def sp2(chan: Chan[int]):
-    for i in range(10):
-        chan << i << i * 3
-
-
-def rp(chans: list[Chan[int]]):
-    rl = []
-    for t in select(*chans):
-        rl.append(t)
-        if len(rl) == 40:
-            break
-    print(rl)
-
 def send_process(chan: Chan[int], _id: int):
-    while True:
-        chan << _id
-        time.sleep(2)
+    for i in range(10):
+        chan << i
+        time.sleep(0.1 * _id)
 
 def recv_process(chan_list: list[Chan[int]]):
+    c = []
     for t in select(*chan_list):
-        print(t)
-
-
+        c.append(t)
+        print("Select", t)
+        if len(c) == 30:
+            break
 class TestSelect:
     def test_select(self):
-        chan_list = []
-        for i in range(10):
-            chan = Chan[int]()
-            chan_list.append(chan)
-            p = Process(target=send_process, args=(chan, i))
-            p.start()
-        p = Process(target=recv_process, args=(chan_list,))
-        p.start()
+        ch1 = Chan[int]()
+        ch2 = Chan[int]()
+        ch3 = Chan[int]()
+
+        p1 = Process(target=send_process, args=(ch1, 1))
+        p2 = Process(target=send_process, args=(ch2, 2))
+        p3 = Process(target=send_process, args=(ch3, 3))
+        p4 = Process(target=recv_process, args=([ch1, ch2, ch3],))
+
+        p1.start()
+        p2.start()
+        p3.start()
+        p4.start()
+
+        p1.join()
+        p2.join()
+        p3.join()
+        p4.join()

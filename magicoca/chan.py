@@ -47,13 +47,13 @@ class Chan(Generic[T]):
         """
         self.send_conn.send(value)
 
-    def recv(self, timeout: float | None = None) -> T | None | NoRecvValue:
+    def recv(self, timeout: float | None = None) -> T | NoRecvValue:
         """Receive a value from the channel.
         If the timeout is None, it will block until a value is received.
         If the timeout is a positive number, it will wait for the specified time, and if no value is received, it will return None.
         接收通道中的值。
         如果超时为None，则它将阻塞，直到接收到值。
-        如果超时是正数，则它将等待指定的时间，如果没有接收到值，则返回None。
+        如果超时是正数，则它将等待指定的时间，如果没有接收到值，则返回NoRecvValue。
         Args:
             timeout:
                 The maximum time to wait for a value.
@@ -82,7 +82,7 @@ class Chan(Generic[T]):
         """
         return self
 
-    def __next__(self) -> T:
+    def __next__(self) -> T | NoRecvValue:
         return self.recv()
 
     def __lshift__(self, other: T):
@@ -95,7 +95,7 @@ class Chan(Generic[T]):
         self.send(other)
         return self
 
-    def __rlshift__(self, other: Any) -> T:
+    def __rlshift__(self, other: Any) -> T | NoRecvValue:
         """
         << chan
         Returns: The value received from the channel.
