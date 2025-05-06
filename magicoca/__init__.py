@@ -13,10 +13,15 @@ set_start_method("spawn", force=True)
 
 def select(*args: Chan[T]) -> Generator[T, None, None]:
     """
-    当其中一个通道接收到数据时，yield 该数据。
+    When one of the channels receives data, yield that data.
+    当其中一个通道接收到数据时, yield 该数据
 
-    参数:
-        args: 多个 Chan 对象
+    Args:
+        args: Multiple Chan objects
+              多个 Chan 对象
+    Returns:
+        Generator[T, None, None]: A generator that yields data from the channels.
+                                  一个生成器, 用于从通道中 yield 数据
     """
     # 构造管道到通道列表的映射，避免重复的 recv_conn 对象
     pipe_to_chs: dict[Connection, list[Chan[T]]] = {}

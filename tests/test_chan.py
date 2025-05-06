@@ -1,8 +1,5 @@
-import time
-from select import select
-
 from magicoca.chan import Chan
-from multiprocessing import Process, set_start_method
+from multiprocessing import Process
 
 
 
